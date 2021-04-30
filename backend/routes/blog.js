@@ -59,7 +59,7 @@ const signupSchema = Joi.object({
     is: Joi.exist(),
     then: Joi.date().required()
   }),
-  end_date: Joi.date().less(Joi.ref('start_date')).when('start_date', {
+  end_date: Joi.date().greater(Joi.ref('start_date')).when('start_date', {
     is: Joi.exist(),
     then: Joi.date().required()
   })
@@ -125,12 +125,15 @@ router.post("/blogs", upload.array("myImage", 5), async (req, res, next) => {
     const start_date = req.body.start_date;
     const end_date = req.body.end_date;
     const reference = req.body.reference;
-    const status = req.body.status
+    const status = (req.body.status == "status_private") ? "01":"02" 
+    console.log(status)
+
     const conn = await pool.getConnection();
     // Begin transaction
     await conn.beginTransaction();
 
     try {
+      console.log("sd")
       let results = await conn.query(
         "INSERT INTO blogs(title, content, status, pinned, `like`,create_date, start_date, end_date, reference) VALUES(?, ?, ?, ?, 0,CURRENT_TIMESTAMP, ?, ?, ?);",
         [title, content, status, pinned, start_date, end_date, reference]
